@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "cnappacr2026.azurecr.io/notes-app"
-        RESOURCE_GROUP = "Cnapp-RG"
-        AKS_CLUSTER = "myAKS-cluster"
-        ACR_NAME = "cnappacr2026"
+        IMAGE_NAME = "airowire.azurecr.io/notes-app"
+        RESOURCE_GROUP = "Airowire-RG"
+        AKS_CLUSTER = "Airowire-aks"
+        ACR_NAME = "airowire"
         TENANT_ID = "981439d1-88ac-4c7c-bd5d-d5df66bc0f4c"
     }
 
