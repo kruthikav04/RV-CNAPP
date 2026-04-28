@@ -7,6 +7,7 @@ pipeline {
         AKS_CLUSTER = "Airowire-aks"
         ACR_NAME = "airowire"
         TENANT_ID = "981439d1-88ac-4c7c-bd5d-d5df66bc0f4c"
+        SUBSCRIPTION_ID = "Kruthika's-Subscription"
     }
 
     stages {
@@ -32,7 +33,7 @@ pipeline {
                         --password $AZURE_CLIENT_SECRET \
                         --tenant $TENANT_ID
 
-                    az account set --subscription "Kruthika's-Subscription"
+                    az account set --subscription "$SUBSCRIPTION_ID"
                     '''
                 }
             }
@@ -41,31 +42,23 @@ pipeline {
         stage('Login to ACR') {
             steps {
                 sh '''
-                echo "Logging into Azure Container Registry..."
+                echo "Logging into ACR..."
                 az acr login --name $ACR_NAME
                 '''
             }
         }
 
-       
-        stage('Build & Push Multi-Arch Image') {
+        stage('Build & Push Image') {
             steps {
                 sh '''
-                echo "Setting up buildx..."
+                echo "Building Docker image..."
 
-                docker buildx create --use || true
-                docker buildx inspect --bootstrap
+                docker build -t $IMAGE_NAME:${BUILD_NUMBER} .
+                docker tag $IMAGE_NAME:${BUILD_NUMBER} $IMAGE_NAME:latest
 
-                echo "Enabling cross-architecture support..."
-                docker run --privileged --rm tonistiigi/binfmt --install all
-
-                echo "Building and pushing multi-arch image..."
-
-                docker buildx build \
-                    --platform linux/amd64,linux/arm64 \
-                    -t $IMAGE_NAME:${BUILD_NUMBER} \
-                    -t $IMAGE_NAME:latest \
-                    --push .
+                echo "Pushing image..."
+                docker push $IMAGE_NAME:${BUILD_NUMBER}
+                docker push $IMAGE_NAME:latest
                 '''
             }
         }
@@ -80,18 +73,18 @@ pipeline {
                     --name $AKS_CLUSTER \
                     --overwrite-existing
 
-                echo "Checking cluster..."
                 kubectl get nodes
 
-                echo "Deploying Kubernetes manifests..."
+                echo "Deploying application..."
+
                 kubectl apply -f k8s/deployment.yaml
                 kubectl apply -f k8s/service.yaml
 
-                echo "Updating image in deployment..."
+                echo "Updating image..."
+
                 kubectl set image deployment/notes-app \
                     notes-app=$IMAGE_NAME:${BUILD_NUMBER}
 
-                echo "Waiting for rollout..."
                 kubectl rollout status deployment/notes-app --timeout=120s
                 '''
             }
@@ -103,7 +96,7 @@ pipeline {
             echo "✅ SUCCESS: App deployed to AKS"
         }
         failure {
-            echo "❌ FAILED: Check Jenkins logs"
+            echo "❌ FAILED: Check logs"
         }
     }
 }
