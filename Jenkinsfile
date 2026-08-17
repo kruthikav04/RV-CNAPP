@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "airowire.azurecr.io/notes-app"
-        RESOURCE_GROUP = "Airowire-RG"
-        AKS_CLUSTER = "Airowire-aks"
-        ACR_NAME = "airowire"
+        IMAGE_NAME = "rvdemo.azurecr.io/notes-app"
+        RESOURCE_GROUP = "RV-demo"
+        AKS_CLUSTER = "RV-K8S-Cluster"
+        ACR_NAME = "Rvdemo"
         TENANT_ID = "981439d1-88ac-4c7c-bd5d-d5df66bc0f4c"
         SUBSCRIPTION_ID = "Kruthika's-Subscription"
     }
